@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Etiquetas Gastrozon</title>
+<!-- Tamaño de página para la Brother QL-820NWBc con rollo DK-22205 (62 mm continuo). El largo lo cambia el script. -->
+<style id="page-size">@page{size:62mm 50mm;margin:0}</style>
+<style>
+  /* Pantalla: formulario + vista previa a escala. Impresión: solo la etiqueta, negro sobre blanco. */
+  :root{
+    --bg:#F4F3EF; --surface:#FFFFFF; --ink:#16181B; --muted:#5E5F63; --line:#D9D7D0;
+    --accent:#1F4E8C; --accent-ink:#FFFFFF; --accent-soft:#E6EDF7; --warn:#A6231C; --warn-soft:#F8E8E6;
+    --font-ui:Roboto,"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;
+    --font-label:Roboto,"Helvetica Neue",Arial,sans-serif;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#141517; --surface:#1E2023; --ink:#EEEDEA; --muted:#A3A2A0; --line:#34363A;
+      --accent:#8FB2E6; --accent-ink:#0E1622; --accent-soft:#1C2737; --warn:#E58B83; --warn-soft:#351D1B;
+      color-scheme:dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg); color:var(--ink); font:15px/1.4 var(--font-ui); padding:16px; padding-bottom:110px}
+  .wrap{max-width:860px; margin:0 auto; display:grid; gap:20px; grid-template-columns:minmax(0,1fr)}
+  @media (min-width:760px){ .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start} }
+
+  header.ui{max-width:860px; margin:0 auto 16px; display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap}
+  header.ui h1{margin:0; font-size:20px; font-weight:700}
+  header.ui p{margin:0; color:var(--muted); font-size:13px}
+  .pill{display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:3px 9px; border-radius:999px; background:var(--accent-soft); color:var(--accent)}
+
+  /* vista previa */
+  .preview-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; display:grid; gap:12px}
+  .preview-wrap{position:relative; width:100%; overflow:hidden}
+  .preview-scale{transform-origin:top left; display:inline-block; box-shadow:0 1px 0 var(--line), 0 6px 18px rgba(0,0,0,.12)}
+  .preview-meta{font-size:12px; color:var(--muted)}
+  .overflow-warn{background:var(--warn-soft); color:var(--warn); border-radius:8px; padding:8px 10px; font-size:13px}
+
+  /* formulario */
+  form.ui{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; display:grid; gap:14px}
+  .row{display:grid; gap:10px; grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .row.three{grid-template-columns:minmax(0,1fr) minmax(0,.7fr) minmax(0,1fr)}
+  label.f{display:grid; gap:5px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); min-width:0}
+  input[type=text], input[type=date], input[type=datetime-local], select{
+    width:100%; min-width:0; font:inherit; font-size:16px; text-transform:none; letter-spacing:0; color:var(--ink);
+    background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 11px;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{font:inherit; font-size:13px; font-weight:600; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:6px 12px; cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+  .check{display:flex; align-items:center; gap:10px; font-size:14px; font-weight:500}
+  .check input{width:22px; height:22px; accent-color:var(--accent)}
+  .hint{font-size:12.5px; color:var(--muted); margin:0}
+
+  .print-bar{position:fixed; left:0; right:0; bottom:0; background:var(--surface); border-top:1px solid var(--line); padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+  .print-bar .in{max-width:860px; margin:0 auto; display:flex; gap:12px; align-items:center}
+  .btn{flex:1; font:inherit; font-size:17px; font-weight:700; border:none; border-radius:10px; padding:15px 18px; background:var(--accent); color:var(--accent-ink); cursor:pointer}
+  .print-bar small{color:var(--muted); font-size:12px; max-width:280px}
+  @media (max-width:520px){ .print-bar small{display:none} }
+
+  details.help{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 16px; max-width:860px; margin:20px auto 0}
+  details.help summary{font-weight:600; cursor:pointer}
+  details.help ol{margin:10px 0 4px; padding-left:20px; color:var(--muted); font-size:14px}
+
+  /* ---------- la etiqueta (siempre negro sobre blanco) ---------- */
+  .label{
+    width:62mm; height:50mm; padding:2.5mm 3mm; background:#fff; color:#000;
+    font-family:var(--font-label); display:flex; flex-direction:column; gap:1.3mm; overflow:hidden;
+  }
+  .l-top{display:flex; justify-content:space-between; gap:2mm; font-size:7pt; font-weight:800; letter-spacing:.09em; border-bottom:.3mm solid #000; padding-bottom:.8mm; white-space:nowrap}
+  .l-top .lote{letter-spacing:0; font-weight:600; font-variant-numeric:tabular-nums}
+  .l-prod{font-size:16pt; font-weight:800; line-height:1.05; overflow-wrap:anywhere}
+  .l-grid{display:grid; grid-template-columns:1fr 1.2fr; gap:1.5mm}
+  .l-grid small{display:block; font-size:5.8pt; font-weight:800; text-transform:uppercase; letter-spacing:.07em}
+  .l-grid b{display:block; font-size:8.5pt; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .l-grid .cad{border:.7mm solid #000; padding:.5mm 1.3mm .7mm}
+  .l-grid .cad b{font-size:11pt; font-weight:800}
+  .l-alerg{font-size:6.8pt; font-weight:600; line-height:1.2}
+  .l-desc{font-size:6.8pt; font-weight:800; text-transform:uppercase; letter-spacing:.03em}
+  .l-foot{margin-top:auto; display:flex; justify-content:space-between; gap:2mm; font-size:8pt; font-weight:700; font-variant-numeric:tabular-nums}
+
+  @media print{
+    html,body{background:#fff !important; padding:0 !important; margin:0 !important}
+    .ui, .print-bar, details.help, .preview-meta, .overflow-warn{display:none !important}
+    .wrap{display:block !important; max-width:none; margin:0}
+    .preview-card{border:0; padding:0; background:none; display:block}
+    .preview-wrap{height:auto !important; overflow:visible}
+    .preview-scale{transform:none !important; box-shadow:none}
+    .label{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+
+<header class="ui">
+  <h1>Etiquetas de trazabilidad</h1>
+  <span class="pill" id="mode-pill">Etiqueta de ejemplo</span>
+</header>
+
+<div class="wrap">
+  <section class="preview-card">
+    <div class="preview-wrap" id="preview-wrap">
+      <div class="preview-scale" id="preview-scale">
+        <div class="label" id="label">
+          <div class="l-top"><span id="L-local">NIMBIN</span><span class="lote" id="L-lote">Lote</span></div>
+          <div class="l-prod" id="L-prod">Producto</div>
+          <div class="l-grid">
+            <div><small>Elaborado</small><b id="L-elab">—</b></div>
+            <div class="cad"><small>Consumir antes de</small><b id="L-cad">—</b></div>
+          </div>
+          <div class="l-alerg" id="L-alerg" hidden></div>
+          <div class="l-desc" id="L-desc" hidden>Descongelado · no volver a congelar</div>
+          <div class="l-foot"><span id="L-qty"></span><span id="L-resp"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="overflow-warn" id="overflow-warn" hidden>No cabe todo en la etiqueta. Acorta el texto o elige un largo mayor.</div>
+    <div class="preview-meta" id="preview-meta">Rollo DK-22205 · 62 mm de ancho</div>
+  </section>
+
+  <form class="ui" id="form" autocomplete="off">
+    <label class="f">Producto
+      <input type="text" id="f-prod" maxlength="60">
+    </label>
+    <div class="row">
+      <label class="f">Local
+        <select id="f-local">
+          <option>Nimbin</option>
+          <option>La Bernarda</option>
+        </select>
+      </label>
+      <label class="f">Elaborado por
+        <input type="text" id="f-resp" maxlength="24">
+      </label>
+    </div>
+    <div class="row">
+      <label class="f">Elaborado
+        <input type="datetime-local" id="f-elab">
+      </label>
+      <label class="f">Consumir antes de
+        <input type="date" id="f-cad">
+      </label>
+    </div>
+    <div class="chips" id="cad-chips" aria-label="Vida útil">
+      <button type="button" class="chip" data-days="1">+1 día</button>
+      <button type="button" class="chip" data-days="2">+2 días</button>
+      <button type="button" class="chip" data-days="3">+3 días</button>
+      <button type="button" class="chip" data-days="5">+5 días</button>
+      <button type="button" class="chip" data-days="7">+7 días</button>
+    </div>
+    <div class="row three">
+      <label class="f">Cantidad
+        <input type="text" id="f-qty" inputmode="decimal" maxlength="8">
+      </label>
+      <label class="f">Unidad
+        <input type="text" id="f-unit" maxlength="10">
+      </label>
+      <label class="f">Lote
+        <input type="text" id="f-lote" maxlength="24">
+      </label>
+    </div>
+    <label class="f">Alérgenos <span style="text-transform:none;letter-spacing:0;font-weight:500">(opcional)</span>
+      <input type="text" id="f-alerg" maxlength="90" placeholder="Ej.: huevo, mostaza">
+    </label>
+    <label class="check"><input type="checkbox" id="f-desc"> Producto descongelado</label>
+    <div class="row">
+      <label class="f">Largo de etiqueta
+        <select id="f-len">
+          <option value="30">30 mm</option>
+          <option value="40">40 mm</option>
+          <option value="50" selected>50 mm</option>
+          <option value="60">60 mm</option>
+          <option value="70">70 mm</option>
+        </select>
+      </label>
+    </div>
+    <p class="hint">Si dejas el lote vacío se genera solo con el local, la fecha y la hora de elaboración.</p>
+  </form>
+</div>
+
+<details class="help ui">
+  <summary>Cómo imprimir en la tablet</summary>
+  <ol>
+    <li>Pulsa <b>Imprimir etiqueta</b>.</li>
+    <li>Arriba, elige la impresora <b>Brother QL-820NWB</b>.</li>
+    <li>En tamaño de papel elige <b>62 mm</b> (rollo continuo). Márgenes: ninguno.</li>
+    <li>Para varias etiquetas iguales, cambia el número de <b>copias</b>.</li>
+  </ol>
+</details>
+
+<div class="print-bar ui">
+  <div class="in">
+    <button type="button" class="btn" id="print-btn">Imprimir etiqueta</button>
+    <small>Brother QL-820NWBc · DK-22205 (62 mm)</small>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  function $(id){ return document.getElementById(id); }
+  var f = {
+    prod:$("f-prod"), local:$("f-local"), resp:$("f-resp"), elab:$("f-elab"), cad:$("f-cad"),
+    qty:$("f-qty"), unit:$("f-unit"), lote:$("f-lote"), alerg:$("f-alerg"), desc:$("f-desc"), len:$("f-len")
+  };
+  var label = $("label");
+  var DOW = ["dom","lun","mar","mié","jue","vie","sáb"];
+
+  function pad(n){ return n < 10 ? "0" + n : "" + n; }
+  function toDateTimeInput(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes()); }
+  function toDateInput(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function parseLocal(s){
+    var m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/.exec(s || "");
+    if(!m) return null;
+    return new Date(+m[1], +m[2]-1, +m[3], m[4] ? +m[4] : 12, m[5] ? +m[5] : 0);
+  }
+  function fmtDate(d){ return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+String(d.getFullYear()).slice(2); }
+  function fmtTime(d){ return pad(d.getHours())+":"+pad(d.getMinutes()); }
+  function dayDiff(a, b){
+    var x = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+    var y = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+    return Math.round((y - x) / 86400000);
+  }
+  function prefix(local){
+    var k = (local || "").toLowerCase();
+    if(k.indexOf("nimbin") > -1) return "NIM";
+    if(k.indexOf("bernarda") > -1) return "BER";
+    return ((local || "").replace(/[^A-Za-z]/g, "").slice(0,3).toUpperCase()) || "GZ";
+  }
+  function autoLote(){
+    var d = parseLocal(f.elab.value) || new Date();
+    return prefix(f.local.value)+"-"+pad(d.getDate())+pad(d.getMonth()+1)+String(d.getFullYear()).slice(2)+"-"+pad(d.getHours())+pad(d.getMinutes());
+  }
+  function ensureLocalOption(v){
+    if(!v) return;
+    for(var i=0; i<f.local.options.length; i++){ if(f.local.options[i].value === v) return; }
+    var o = document.createElement("option"); o.textContent = v; f.local.appendChild(o);
+  }
+  function setText(id, t){ $(id).textContent = t; }
+
+  function fit(){
+    var p = $("L-prod"), s = 17;
+    p.style.fontSize = s + "pt";
+    while(s > 8 && label.scrollHeight > label.clientHeight + 1){ s -= 1; p.style.fontSize = s + "pt"; }
+    $("overflow-warn").hidden = label.scrollHeight <= label.clientHeight + 1;
+  }
+  function scalePreview(){
+    var wrap = $("preview-wrap"), box = $("preview-scale");
+    var s = Math.min(2.2, wrap.clientWidth / label.offsetWidth);
+    box.style.transform = "scale(" + s + ")";
+    wrap.style.height = Math.ceil(label.offsetHeight * s) + "px";
+  }
+  function updateChips(){
+    var e = parseLocal(f.elab.value), c = parseLocal(f.cad.value);
+    var diff = (e && c) ? dayDiff(e, c) : null;
+    document.querySelectorAll("#cad-chips .chip").forEach(function(b){
+      b.setAttribute("aria-pressed", String(diff === +b.dataset.days));
+    });
+  }
+
+  function render(){
+    var e = parseLocal(f.elab.value), c = parseLocal(f.cad.value);
+    var len = +f.len.value || 50;
+    setText("L-local", (f.local.value || "").toUpperCase());
+    f.lote.placeholder = autoLote();
+    setText("L-lote", "Lote " + (f.lote.value.trim() || autoLote()));
+    setText("L-prod", f.prod.value.trim() || "Producto");
+    setText("L-elab", e ? fmtDate(e) + " · " + fmtTime(e) : "—");
+    setText("L-cad", c ? DOW[c.getDay()] + " " + fmtDate(c) : "—");
+    var q = f.qty.value.trim(), u = f.unit.value.trim();
+    setText("L-qty", q ? q + (u ? " " + u : "") : "");
+    setText("L-resp", f.resp.value.trim() ? "Elab.: " + f.resp.value.trim() : "");
+    var a = f.alerg.value.trim();
+    $("L-alerg").hidden = !a;
+    setText("L-alerg", "Alérgenos: " + a);
+    $("L-desc").hidden = !f.desc.checked;
+    $("page-size").textContent = "@page{size:62mm " + len + "mm;margin:0}";
+    label.style.height = len + "mm";
+    setText("preview-meta", "Rollo DK-22205 · 62 × " + len + " mm");
+    fit(); scalePreview(); updateChips();
+  }
+
+  function fillExample(){
+    var now = new Date(), cad = new Date(now.getTime());
+    cad.setDate(cad.getDate() + 3);
+    f.prod.value = "Salsa brava";
+    f.local.value = "Nimbin";
+    f.resp.value = "Cocina";
+    f.elab.value = toDateTimeInput(now);
+    f.cad.value = toDateInput(cad);
+    f.qty.value = "2"; f.unit.value = "L";
+    f.lote.value = ""; f.alerg.value = ""; f.desc.checked = false;
+    $("mode-pill").textContent = "Etiqueta de ejemplo";
+  }
+
+  // Datos que manda el repaso en el enlace: #p=…&l=…&e=AAAA-MM-DDTHH:MM&c=AAAA-MM-DD&lt=…&q=…&u=…&r=…&a=…&d=1&len=50&auto=1
+  function fromHash(){
+    var h = location.hash.replace(/^#/, "");
+    if(!h) return null;
+    var p = new URLSearchParams(h);
+    if(!p.get("p")) return null;
+    var now = new Date();
+    f.prod.value = p.get("p") || "";
+    ensureLocalOption(p.get("l"));
+    if(p.get("l")) f.local.value = p.get("l");
+    f.resp.value = p.get("r") || "";
+    f.elab.value = parseLocal(p.get("e")) ? p.get("e").slice(0,16) : toDateTimeInput(now);
+    f.cad.value = parseLocal(p.get("c")) ? p.get("c").slice(0,10) : "";
+    f.qty.value = p.get("q") || "";
+    f.unit.value = p.get("u") || "";
+    f.lote.value = p.get("lt") || "";
+    f.alerg.value = p.get("a") || "";
+    f.desc.checked = p.get("d") === "1";
+    if(p.get("len") && f.len.querySelector('option[value="' + p.get("len") + '"]')) f.len.value = p.get("len");
+    $("mode-pill").textContent = "Desde el repaso";
+    return { auto: p.get("auto") === "1" };
+  }
+
+  function load(){
+    var r = fromHash();
+    if(!r) fillExample();
+    render();
+    if(r && r.auto) setTimeout(function(){ window.print(); }, 500);
+  }
+
+  $("form").addEventListener("input", render);
+  $("form").addEventListener("change", render);
+  $("form").addEventListener("submit", function(ev){ ev.preventDefault(); });
+  $("cad-chips").addEventListener("click", function(ev){
+    var b = ev.target.closest(".chip"); if(!b) return;
+    var d = parseLocal(f.elab.value) || new Date();
+    d.setDate(d.getDate() + (+b.dataset.days));
+    f.cad.value = toDateInput(d);
+    render();
+  });
+  $("print-btn").addEventListener("click", function(){ render(); window.print(); });
+  window.addEventListener("resize", scalePreview);
+  window.addEventListener("hashchange", load);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+  load();
+})();
+</script>
+</body>
+</html>
