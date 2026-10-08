@@ -119,16 +119,19 @@
       <button type="button" class="chip" data-days="7">+7 días</button>
     </div>
     <div class="row three">
-      <label class="f">Cantidad
+      <label class="f">Cantidad pedida
+        <input type="text" id="f-qped" inputmode="decimal" maxlength="8">
+      </label>
+      <label class="f">Cantidad preparada
         <input type="text" id="f-qty" inputmode="decimal" maxlength="8">
       </label>
       <label class="f">Unidad
         <input type="text" id="f-unit" maxlength="10">
       </label>
-      <label class="f">Lote
-        <input type="text" id="f-lote" maxlength="20">
-      </label>
     </div>
+    <label class="f">Lote
+      <input type="text" id="f-lote" maxlength="20">
+    </label>
     <label class="f">Alérgenos <span style="text-transform:none;letter-spacing:0;font-weight:500">(opcional)</span>
       <input type="text" id="f-alerg" maxlength="70" placeholder="Ej.: huevo, mostaza">
     </label>
@@ -171,9 +174,9 @@
   function $(id){ return document.getElementById(id); }
   var f = {
     prod:$("f-prod"), local:$("f-local"), resp:$("f-resp"), elab:$("f-elab"), cad:$("f-cad"),
-    qty:$("f-qty"), unit:$("f-unit"), lote:$("f-lote"), alerg:$("f-alerg"), desc:$("f-desc"), ori:$("f-ori")
+    qty:$("f-qty"), qped:$("f-qped"), unit:$("f-unit"), lote:$("f-lote"), alerg:$("f-alerg"), desc:$("f-desc"), ori:$("f-ori")
   };
-  var DOW = ["dom","lun","mar","mié","jue","vie","sáb"];
+  var DOW = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 
   function pad(n){ return n < 10 ? "0" + n : "" + n; }
   function toDateTimeInput(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes()); }
@@ -258,9 +261,13 @@
     var dateSize = 12;
     x.font = font(800, dateSize);
     while(dateSize > 8 && x.measureText(d.cad).width > inner){ dateSize -= 0.5; x.font = font(800, dateSize); }
+    // Día de la semana completo («MIÉRCOLES»): se reduce si no cabe en el recuadro.
+    var dowTxt = d.dow.toUpperCase(), dowSize = 8.5;
+    x.font = font(800, dowSize);
+    while(dowSize > 5.5 && x.measureText(dowTxt).width > inner){ dowSize -= 0.25; x.font = font(800, dowSize); }
     var rows = [
       { t:"CONSUMIR ANTES DE", f:font(800, 5), h:pt(5) * 1.25 },
-      { t:d.dow.toUpperCase(), f:font(700, 8), h:pt(8) * 1.15 },
+      { t:dowTxt, f:font(800, dowSize), h:pt(dowSize) * 1.2 },
       { t:d.cad, f:font(800, dateSize), h:pt(dateSize) * 1.05 }
     ];
     if(!d.dow) rows.splice(1, 1);
@@ -290,11 +297,18 @@
     x.fillRect(lx, ruleY, lW, mm(0.25));
     var areaTop = ruleY + mm(0.25) + mm(0.9);
 
-    // Línea inferior: elaboración · cantidad · responsable
+    // Abajo: cantidades (pedida / preparada) y, encima, elaboración · responsable
     var bottomBase = H - padY - mm(0.3);
+    var infoLH = pt(6.5) * 1.2;
+    var baseY = bottomBase;
+    if(d.qtyLine){
+      x.font = font(800, 6.5);
+      x.fillText(ellipsize(x, d.qtyLine, lW), lx, baseY);
+      baseY -= infoLH;
+    }
     x.font = font(700, 6.5);
-    x.fillText(ellipsize(x, d.info, lW), lx, bottomBase);
-    var areaBottom = bottomBase - pt(6.5) * 0.85 - mm(0.8);
+    x.fillText(ellipsize(x, d.info, lW), lx, baseY);
+    var areaBottom = baseY - pt(6.5) * 0.85 - mm(0.8);
 
     // Extras encima: alérgenos y descongelado
     var extras = [];
@@ -346,9 +360,12 @@
   function currentData(){
     var e = parseLocal(f.elab.value), c = parseLocal(f.cad.value);
     var info = ["Elab. " + (e ? fmtDate(e) + " " + fmtTime(e) : "—")];
-    var q = f.qty.value.trim(), u = f.unit.value.trim();
-    if(q) info.push(q + (u ? " " + u : ""));
     if(f.resp.value.trim()) info.push(f.resp.value.trim());
+    var q = f.qty.value.trim(), qp = f.qped.value.trim(), u = f.unit.value.trim();
+    function withUnit(v){ return v + (u ? " " + u : ""); }
+    var qparts = [];
+    if(qp) qparts.push("Pedido: " + withUnit(qp));
+    if(q) qparts.push((qp ? "Preparado: " : "Cantidad: ") + withUnit(q));
     return {
       local: f.local.value || "",
       lote: f.lote.value.trim() || autoLote(),
@@ -356,6 +373,7 @@
       dow: c ? DOW[c.getDay()] : "",
       cad: c ? fmtDate(c) : "—",
       info: info.join(" · "),
+      qtyLine: qparts.join(" · "),
       alerg: f.alerg.value.trim(),
       desc: f.desc.checked
     };
@@ -399,12 +417,12 @@
     f.resp.value = "Cocina";
     f.elab.value = toDateTimeInput(now);
     f.cad.value = toDateInput(cad);
-    f.qty.value = "2"; f.unit.value = "L";
+    f.qped.value = "2"; f.qty.value = "1,5"; f.unit.value = "L";
     f.lote.value = ""; f.alerg.value = ""; f.desc.checked = false;
     $("mode-pill").textContent = "Etiqueta de ejemplo";
   }
 
-  // Datos que manda el repaso en el enlace: #p=…&l=…&e=AAAA-MM-DDTHH:MM&c=AAAA-MM-DD&lt=…&q=…&u=…&r=…&a=…&d=1&auto=1
+  // Datos que manda el repaso en el enlace: #p=…&l=…&e=AAAA-MM-DDTHH:MM&c=AAAA-MM-DD&lt=…&qa=pedida&q=preparada&u=…&r=…&a=…&d=1&auto=1
   function fromHash(){
     var h = location.hash.replace(/^#/, "");
     if(!h) return null;
@@ -417,6 +435,7 @@
     f.elab.value = parseLocal(p.get("e")) ? p.get("e").slice(0,16) : toDateTimeInput(new Date());
     f.cad.value = parseLocal(p.get("c")) ? p.get("c").slice(0,10) : "";
     f.qty.value = p.get("q") || "";
+    f.qped.value = p.get("qa") || "";
     f.unit.value = p.get("u") || "";
     f.lote.value = p.get("lt") || "";
     f.alerg.value = p.get("a") || "";
