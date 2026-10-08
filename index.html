@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Etiquetas Gastrozon</title>
-<!-- Tamaño de página para la Brother QL-820NWBc con rollo DK-22205 (62 mm continuo). El largo lo cambia el script. -->
-<style id="page-size">@page{size:62mm 50mm;margin:0}</style>
+<!-- Brother QL-820NWBc con etiquetas precortadas de 29 × 90 mm (DK-11201).
+     La etiqueta se dibuja como imagen a ~300 ppp y se imprime ocupando la página entera,
+     para que el navegador no la reduzca ni la gire por su cuenta. -->
+<style id="page-size">@page{size:29mm 90mm;margin:0}</style>
 <style>
-  /* Pantalla: formulario + vista previa a escala. Impresión: solo la etiqueta, negro sobre blanco. */
   :root{
     --bg:#F4F3EF; --surface:#FFFFFF; --ink:#16181B; --muted:#5E5F63; --line:#D9D7D0;
     --accent:#1F4E8C; --accent-ink:#FFFFFF; --accent-soft:#E6EDF7; --warn:#A6231C; --warn-soft:#F8E8E6;
     --font-ui:Roboto,"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;
-    --font-label:Roboto,"Helvetica Neue",Arial,sans-serif;
     color-scheme:light;
   }
   @media (prefers-color-scheme:dark){
@@ -27,24 +27,20 @@
   html,body{margin:0}
   body{background:var(--bg); color:var(--ink); font:15px/1.4 var(--font-ui); padding:16px; padding-bottom:110px}
   .wrap{max-width:860px; margin:0 auto; display:grid; gap:20px; grid-template-columns:minmax(0,1fr)}
-  @media (min-width:760px){ .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start} }
 
   header.ui{max-width:860px; margin:0 auto 16px; display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap}
   header.ui h1{margin:0; font-size:20px; font-weight:700}
-  header.ui p{margin:0; color:var(--muted); font-size:13px}
   .pill{display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:3px 9px; border-radius:999px; background:var(--accent-soft); color:var(--accent)}
 
-  /* vista previa */
   .preview-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; display:grid; gap:12px}
-  .preview-wrap{position:relative; width:100%; overflow:hidden}
-  .preview-scale{transform-origin:top left; display:inline-block; box-shadow:0 1px 0 var(--line), 0 6px 18px rgba(0,0,0,.12)}
+  #preview-img{display:block; width:100%; max-width:640px; height:auto; border-radius:6px; background:#fff; box-shadow:0 1px 0 var(--line), 0 6px 18px rgba(0,0,0,.12)}
   .preview-meta{font-size:12px; color:var(--muted)}
   .overflow-warn{background:var(--warn-soft); color:var(--warn); border-radius:8px; padding:8px 10px; font-size:13px}
 
-  /* formulario */
   form.ui{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; display:grid; gap:14px}
   .row{display:grid; gap:10px; grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .row.three{grid-template-columns:minmax(0,1fr) minmax(0,.7fr) minmax(0,1fr)}
+  @media (max-width:420px){ .row.three{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .row.three label:last-child{grid-column:1 / -1} }
   label.f{display:grid; gap:5px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); min-width:0}
   input[type=text], input[type=date], input[type=datetime-local], select{
     width:100%; min-width:0; font:inherit; font-size:16px; text-transform:none; letter-spacing:0; color:var(--ink);
@@ -68,36 +64,17 @@
   details.help summary{font-weight:600; cursor:pointer}
   details.help ol{margin:10px 0 4px; padding-left:20px; color:var(--muted); font-size:14px}
 
-  /* ---------- la etiqueta (siempre negro sobre blanco) ---------- */
-  .label{
-    width:62mm; height:50mm; padding:2.5mm 3mm; background:#fff; color:#000;
-    font-family:var(--font-label); display:flex; flex-direction:column; gap:1.3mm; overflow:hidden;
-  }
-  .l-top{display:flex; justify-content:space-between; gap:2mm; font-size:7pt; font-weight:800; letter-spacing:.09em; border-bottom:.3mm solid #000; padding-bottom:.8mm; white-space:nowrap}
-  .l-top .lote{letter-spacing:0; font-weight:600; font-variant-numeric:tabular-nums}
-  .l-prod{font-size:16pt; font-weight:800; line-height:1.05; overflow-wrap:anywhere}
-  .l-grid{display:grid; grid-template-columns:1fr 1.2fr; gap:1.5mm}
-  .l-grid small{display:block; font-size:5.8pt; font-weight:800; text-transform:uppercase; letter-spacing:.07em}
-  .l-grid b{display:block; font-size:8.5pt; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap}
-  .l-grid .cad{border:.7mm solid #000; padding:.5mm 1.3mm .7mm}
-  .l-grid .cad b{font-size:11pt; font-weight:800}
-  .l-alerg{font-size:6.8pt; font-weight:600; line-height:1.2}
-  .l-desc{font-size:6.8pt; font-weight:800; text-transform:uppercase; letter-spacing:.03em}
-  .l-foot{margin-top:auto; display:flex; justify-content:space-between; gap:2mm; font-size:8pt; font-weight:700; font-variant-numeric:tabular-nums}
-
+  #print-img{display:none}
   @media print{
-    html,body{background:#fff !important; padding:0 !important; margin:0 !important}
-    .ui, .print-bar, details.help, .preview-meta, .overflow-warn{display:none !important}
-    .wrap{display:block !important; max-width:none; margin:0}
-    .preview-card{border:0; padding:0; background:none; display:block}
-    .preview-wrap{height:auto !important; overflow:visible}
-    .preview-scale{transform:none !important; box-shadow:none}
-    .label{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+    html,body{background:#fff !important; padding:0 !important; margin:0 !important; overflow:hidden}
+    body > *:not(#print-img){display:none !important}
+    #print-img{display:block !important; margin:0; padding:0; border:0}
+    body.ori-h #print-img{width:90mm; height:29mm}
+    body.ori-v #print-img{width:29mm; height:90mm}
   }
-  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
 </style>
 </head>
-<body>
+<body class="ori-v">
 
 <header class="ui">
   <h1>Etiquetas de trazabilidad</h1>
@@ -105,29 +82,15 @@
 </header>
 
 <div class="wrap">
-  <section class="preview-card">
-    <div class="preview-wrap" id="preview-wrap">
-      <div class="preview-scale" id="preview-scale">
-        <div class="label" id="label">
-          <div class="l-top"><span id="L-local">NIMBIN</span><span class="lote" id="L-lote">Lote</span></div>
-          <div class="l-prod" id="L-prod">Producto</div>
-          <div class="l-grid">
-            <div><small>Elaborado</small><b id="L-elab">—</b></div>
-            <div class="cad"><small>Consumir antes de</small><b id="L-cad">—</b></div>
-          </div>
-          <div class="l-alerg" id="L-alerg" hidden></div>
-          <div class="l-desc" id="L-desc" hidden>Descongelado · no volver a congelar</div>
-          <div class="l-foot"><span id="L-qty"></span><span id="L-resp"></span></div>
-        </div>
-      </div>
-    </div>
-    <div class="overflow-warn" id="overflow-warn" hidden>No cabe todo en la etiqueta. Acorta el texto o elige un largo mayor.</div>
-    <div class="preview-meta" id="preview-meta">Rollo DK-22205 · 62 mm de ancho</div>
+  <section class="preview-card ui">
+    <img id="preview-img" alt="Vista previa de la etiqueta">
+    <div class="overflow-warn" id="overflow-warn" hidden>No cabe todo en la etiqueta: se ha recortado el nombre. Acórtalo o quita texto de alérgenos.</div>
+    <div class="preview-meta">Etiqueta precortada 29 × 90 mm (DK-11201). Lo que ves es exactamente lo que se imprime.</div>
   </section>
 
   <form class="ui" id="form" autocomplete="off">
     <label class="f">Producto
-      <input type="text" id="f-prod" maxlength="60">
+      <input type="text" id="f-prod" maxlength="50">
     </label>
     <div class="row">
       <label class="f">Local
@@ -137,7 +100,7 @@
         </select>
       </label>
       <label class="f">Elaborado por
-        <input type="text" id="f-resp" maxlength="24">
+        <input type="text" id="f-resp" maxlength="20">
       </label>
     </div>
     <div class="row">
@@ -163,25 +126,23 @@
         <input type="text" id="f-unit" maxlength="10">
       </label>
       <label class="f">Lote
-        <input type="text" id="f-lote" maxlength="24">
+        <input type="text" id="f-lote" maxlength="20">
       </label>
     </div>
     <label class="f">Alérgenos <span style="text-transform:none;letter-spacing:0;font-weight:500">(opcional)</span>
-      <input type="text" id="f-alerg" maxlength="90" placeholder="Ej.: huevo, mostaza">
+      <input type="text" id="f-alerg" maxlength="70" placeholder="Ej.: huevo, mostaza">
     </label>
     <label class="check"><input type="checkbox" id="f-desc"> Producto descongelado</label>
     <div class="row">
-      <label class="f">Largo de etiqueta
-        <select id="f-len">
-          <option value="30">30 mm</option>
-          <option value="40">40 mm</option>
-          <option value="50" selected>50 mm</option>
-          <option value="60">60 mm</option>
-          <option value="70">70 mm</option>
+      <label class="f">Orientación al imprimir
+        <select id="f-ori">
+          <option value="v" selected>Vertical (recomendada)</option>
+          <option value="vi">Vertical invertida</option>
+          <option value="h">Horizontal</option>
         </select>
       </label>
     </div>
-    <p class="hint">Si dejas el lote vacío se genera solo con el local, la fecha y la hora de elaboración.</p>
+    <p class="hint">Si el texto sale boca abajo, elige «Vertical invertida». La tablet recuerda la opción. Si dejas el lote vacío se genera solo.</p>
   </form>
 </div>
 
@@ -190,7 +151,7 @@
   <ol>
     <li>Pulsa <b>Imprimir etiqueta</b>.</li>
     <li>Arriba, elige la impresora <b>Brother QL-820NWB</b>.</li>
-    <li>En tamaño de papel elige <b>62 mm</b> (rollo continuo). Márgenes: ninguno.</li>
+    <li>En tamaño de papel elige <b>29 × 90 mm</b> y orientación <b>vertical</b>.</li>
     <li>Para varias etiquetas iguales, cambia el número de <b>copias</b>.</li>
   </ol>
 </details>
@@ -198,9 +159,11 @@
 <div class="print-bar ui">
   <div class="in">
     <button type="button" class="btn" id="print-btn">Imprimir etiqueta</button>
-    <small>Brother QL-820NWBc · DK-22205 (62 mm)</small>
+    <small>Brother QL-820NWBc · DK-11201 (29 × 90 mm)</small>
   </div>
 </div>
+
+<img id="print-img" alt="">
 
 <script>
 (function(){
@@ -208,9 +171,8 @@
   function $(id){ return document.getElementById(id); }
   var f = {
     prod:$("f-prod"), local:$("f-local"), resp:$("f-resp"), elab:$("f-elab"), cad:$("f-cad"),
-    qty:$("f-qty"), unit:$("f-unit"), lote:$("f-lote"), alerg:$("f-alerg"), desc:$("f-desc"), len:$("f-len")
+    qty:$("f-qty"), unit:$("f-unit"), lote:$("f-lote"), alerg:$("f-alerg"), desc:$("f-desc"), ori:$("f-ori")
   };
-  var label = $("label");
   var DOW = ["dom","lun","mar","mié","jue","vie","sáb"];
 
   function pad(n){ return n < 10 ? "0" + n : "" + n; }
@@ -243,20 +205,162 @@
     for(var i=0; i<f.local.options.length; i++){ if(f.local.options[i].value === v) return; }
     var o = document.createElement("option"); o.textContent = v; f.local.appendChild(o);
   }
-  function setText(id, t){ $(id).textContent = t; }
 
-  function fit(){
-    var p = $("L-prod"), s = 17;
-    p.style.fontSize = s + "pt";
-    while(s > 8 && label.scrollHeight > label.clientHeight + 1){ s -= 1; p.style.fontSize = s + "pt"; }
-    $("overflow-warn").hidden = label.scrollHeight <= label.clientHeight + 1;
+  // ---------- dibujo de la etiqueta (90 × 29 mm a 12 px/mm ≈ 305 ppp) ----------
+  var K = 12;
+  var FONT = 'Roboto, "Helvetica Neue", Arial, sans-serif';
+  function mm(n){ return n * K; }
+  function pt(n){ return n * 0.3528 * K; }
+  function font(w, sizePt){ return w + " " + pt(sizePt).toFixed(1) + "px " + FONT; }
+
+  function wrap(ctx, text, maxW){
+    var words = text.split(/\s+/).filter(Boolean), lines = [], cur = "";
+    words.forEach(function(w){
+      var t = cur ? cur + " " + w : w;
+      if(!cur || ctx.measureText(t).width <= maxW) cur = t;
+      else { lines.push(cur); cur = w; }
+    });
+    if(cur) lines.push(cur);
+    var out = [];
+    lines.forEach(function(l){
+      if(ctx.measureText(l).width <= maxW){ out.push(l); return; }
+      var s = "";
+      for(var i=0; i<l.length; i++){
+        var t = s + l[i];
+        if(s && ctx.measureText(t).width > maxW){ out.push(s); s = l[i]; } else s = t;
+      }
+      if(s) out.push(s);
+    });
+    return out;
   }
-  function scalePreview(){
-    var wrap = $("preview-wrap"), box = $("preview-scale");
-    var s = Math.min(2.2, wrap.clientWidth / label.offsetWidth);
-    box.style.transform = "scale(" + s + ")";
-    wrap.style.height = Math.ceil(label.offsetHeight * s) + "px";
+  function ellipsize(ctx, text, maxW){
+    if(ctx.measureText(text).width <= maxW) return text;
+    while(text.length > 1 && ctx.measureText(text + "…").width > maxW) text = text.slice(0, -1);
+    return text + "…";
   }
+
+  function drawLabel(d){
+    var W = mm(90), H = mm(29);
+    var c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d");
+    var overflow = false;
+    x.fillStyle = "#fff"; x.fillRect(0, 0, W, H);
+    x.fillStyle = "#000"; x.strokeStyle = "#000"; x.textBaseline = "alphabetic";
+
+    var padX = mm(2.6), padY = mm(1.8), boxW = mm(24), gap = mm(2);
+
+    // Recuadro de caducidad a la derecha
+    var bx = W - padX - boxW, by = padY, bh = H - 2 * padY, lw = mm(0.6);
+    x.lineWidth = lw;
+    x.strokeRect(bx + lw/2, by + lw/2, boxW - lw, bh - lw);
+    x.textAlign = "center";
+    var cx = bx + boxW / 2, inner = boxW - 2 * lw - mm(1.6);
+    var dateSize = 12;
+    x.font = font(800, dateSize);
+    while(dateSize > 8 && x.measureText(d.cad).width > inner){ dateSize -= 0.5; x.font = font(800, dateSize); }
+    var rows = [
+      { t:"CONSUMIR ANTES DE", f:font(800, 5), h:pt(5) * 1.25 },
+      { t:d.dow.toUpperCase(), f:font(700, 8), h:pt(8) * 1.15 },
+      { t:d.cad, f:font(800, dateSize), h:pt(dateSize) * 1.05 }
+    ];
+    if(!d.dow) rows.splice(1, 1);
+    var total = rows.reduce(function(s, r){ return s + r.h; }, 0);
+    var y = by + (bh - total) / 2;
+    rows.forEach(function(r){
+      x.font = r.f;
+      y += r.h;
+      x.fillText(ellipsize(x, r.t, inner), cx, y - r.h * 0.2);
+    });
+
+    // Columna izquierda
+    x.textAlign = "left";
+    var lx = padX, lW = bx - gap - padX, right = lx + lW;
+
+    // Línea superior: local · lote
+    x.font = font(800, 6);
+    var topBase = padY + pt(6) * 0.85;
+    var localTxt = d.local.toUpperCase();
+    x.fillText(localTxt, lx, topBase);
+    var localW = x.measureText(localTxt).width;
+    x.font = font(600, 6);
+    x.textAlign = "right";
+    x.fillText(ellipsize(x, "Lote " + d.lote, lW - localW - mm(2)), right, topBase);
+    x.textAlign = "left";
+    var ruleY = topBase + mm(0.7);
+    x.fillRect(lx, ruleY, lW, mm(0.25));
+    var areaTop = ruleY + mm(0.25) + mm(0.9);
+
+    // Línea inferior: elaboración · cantidad · responsable
+    var bottomBase = H - padY - mm(0.3);
+    x.font = font(700, 6.5);
+    x.fillText(ellipsize(x, d.info, lW), lx, bottomBase);
+    var areaBottom = bottomBase - pt(6.5) * 0.85 - mm(0.8);
+
+    // Extras encima: alérgenos y descongelado
+    var extras = [];
+    if(d.alerg){
+      x.font = font(600, 6);
+      var al = wrap(x, "Alérgenos: " + d.alerg, lW);
+      if(al.length > 2){ al = al.slice(0, 2); al[1] = ellipsize(x, al[1] + "…", lW); }
+      al.forEach(function(t){ extras.push({ t:t, f:font(600, 6) }); });
+    }
+    if(d.desc) extras.push({ t:"DESCONGELADO · NO VOLVER A CONGELAR", f:font(800, 6) });
+    var exLH = pt(6) * 1.2;
+    for(var i = extras.length - 1; i >= 0; i--){
+      x.font = extras[i].f;
+      x.fillText(ellipsize(x, extras[i].t, lW), lx, areaBottom);
+      areaBottom -= exLH;
+    }
+    if(extras.length) areaBottom -= mm(0.4);
+
+    // Nombre del producto: el mayor tamaño que quepa en el hueco
+    var avail = areaBottom - areaTop, size = 15, lines, lh;
+    for(; size >= 7; size -= 0.5){
+      x.font = font(800, size);
+      lines = wrap(x, d.prod, lW);
+      lh = pt(size) * 1.05;
+      if(lines.length * lh <= avail + pt(size) * 0.2) break;
+    }
+    if(size < 7){
+      size = 7; x.font = font(800, size); lh = pt(size) * 1.05;
+      lines = wrap(x, d.prod, lW);
+      var max = Math.max(1, Math.floor((avail + pt(size) * 0.2) / lh));
+      if(lines.length > max){ lines = lines.slice(0, max); lines[max-1] = ellipsize(x, lines[max-1] + "…", lW); }
+      overflow = true;
+    }
+    var py = areaTop + pt(size) * 0.8;
+    lines.forEach(function(t){ x.fillText(t, lx, py); py += lh; });
+
+    return { canvas:c, overflow:overflow };
+  }
+
+  function rotate(c, dir){
+    var r = document.createElement("canvas"); r.width = c.height; r.height = c.width;
+    var x = r.getContext("2d");
+    if(dir > 0){ x.translate(r.width, 0); x.rotate(Math.PI / 2); }
+    else { x.translate(0, r.height); x.rotate(-Math.PI / 2); }
+    x.drawImage(c, 0, 0);
+    return r;
+  }
+
+  function currentData(){
+    var e = parseLocal(f.elab.value), c = parseLocal(f.cad.value);
+    var info = ["Elab. " + (e ? fmtDate(e) + " " + fmtTime(e) : "—")];
+    var q = f.qty.value.trim(), u = f.unit.value.trim();
+    if(q) info.push(q + (u ? " " + u : ""));
+    if(f.resp.value.trim()) info.push(f.resp.value.trim());
+    return {
+      local: f.local.value || "",
+      lote: f.lote.value.trim() || autoLote(),
+      prod: f.prod.value.trim() || "Producto",
+      dow: c ? DOW[c.getDay()] : "",
+      cad: c ? fmtDate(c) : "—",
+      info: info.join(" · "),
+      alerg: f.alerg.value.trim(),
+      desc: f.desc.checked
+    };
+  }
+
   function updateChips(){
     var e = parseLocal(f.elab.value), c = parseLocal(f.cad.value);
     var diff = (e && c) ? dayDiff(e, c) : null;
@@ -266,25 +370,25 @@
   }
 
   function render(){
-    var e = parseLocal(f.elab.value), c = parseLocal(f.cad.value);
-    var len = +f.len.value || 50;
-    setText("L-local", (f.local.value || "").toUpperCase());
     f.lote.placeholder = autoLote();
-    setText("L-lote", "Lote " + (f.lote.value.trim() || autoLote()));
-    setText("L-prod", f.prod.value.trim() || "Producto");
-    setText("L-elab", e ? fmtDate(e) + " · " + fmtTime(e) : "—");
-    setText("L-cad", c ? DOW[c.getDay()] + " " + fmtDate(c) : "—");
-    var q = f.qty.value.trim(), u = f.unit.value.trim();
-    setText("L-qty", q ? q + (u ? " " + u : "") : "");
-    setText("L-resp", f.resp.value.trim() ? "Elab.: " + f.resp.value.trim() : "");
-    var a = f.alerg.value.trim();
-    $("L-alerg").hidden = !a;
-    setText("L-alerg", "Alérgenos: " + a);
-    $("L-desc").hidden = !f.desc.checked;
-    $("page-size").textContent = "@page{size:62mm " + len + "mm;margin:0}";
-    label.style.height = len + "mm";
-    setText("preview-meta", "Rollo DK-22205 · 62 × " + len + " mm");
-    fit(); scalePreview(); updateChips();
+    var res = drawLabel(currentData());
+    $("preview-img").src = res.canvas.toDataURL("image/png");
+    $("overflow-warn").hidden = !res.overflow;
+
+    var ori = f.ori.value;
+    document.body.classList.toggle("ori-h", ori === "h");
+    document.body.classList.toggle("ori-v", ori !== "h");
+    var printCanvas = ori === "h" ? res.canvas : rotate(res.canvas, ori === "v" ? 1 : -1);
+    $("print-img").src = printCanvas.toDataURL("image/png");
+    $("page-size").textContent = ori === "h" ? "@page{size:90mm 29mm;margin:0}" : "@page{size:29mm 90mm;margin:0}";
+    updateChips();
+  }
+
+  function doPrint(){
+    render();
+    var img = $("print-img");
+    var ready = img.decode ? img.decode().catch(function(){}) : Promise.resolve();
+    ready.then(function(){ window.print(); });
   }
 
   function fillExample(){
@@ -300,39 +404,43 @@
     $("mode-pill").textContent = "Etiqueta de ejemplo";
   }
 
-  // Datos que manda el repaso en el enlace: #p=…&l=…&e=AAAA-MM-DDTHH:MM&c=AAAA-MM-DD&lt=…&q=…&u=…&r=…&a=…&d=1&len=50&auto=1
+  // Datos que manda el repaso en el enlace: #p=…&l=…&e=AAAA-MM-DDTHH:MM&c=AAAA-MM-DD&lt=…&q=…&u=…&r=…&a=…&d=1&auto=1
   function fromHash(){
     var h = location.hash.replace(/^#/, "");
     if(!h) return null;
     var p = new URLSearchParams(h);
     if(!p.get("p")) return null;
-    var now = new Date();
     f.prod.value = p.get("p") || "";
     ensureLocalOption(p.get("l"));
     if(p.get("l")) f.local.value = p.get("l");
     f.resp.value = p.get("r") || "";
-    f.elab.value = parseLocal(p.get("e")) ? p.get("e").slice(0,16) : toDateTimeInput(now);
+    f.elab.value = parseLocal(p.get("e")) ? p.get("e").slice(0,16) : toDateTimeInput(new Date());
     f.cad.value = parseLocal(p.get("c")) ? p.get("c").slice(0,10) : "";
     f.qty.value = p.get("q") || "";
     f.unit.value = p.get("u") || "";
     f.lote.value = p.get("lt") || "";
     f.alerg.value = p.get("a") || "";
     f.desc.checked = p.get("d") === "1";
-    if(p.get("len") && f.len.querySelector('option[value="' + p.get("len") + '"]')) f.len.value = p.get("len");
     $("mode-pill").textContent = "Desde el repaso";
     return { auto: p.get("auto") === "1" };
   }
+
+  // La orientación elegida se recuerda en esta tablet.
+  var ORI_KEY = "etq-ori-29x90";
+  function loadOri(){ try{ var v = localStorage.getItem(ORI_KEY); if(v === "h" || v === "v" || v === "vi") f.ori.value = v; }catch(e){} }
+  function saveOri(){ try{ localStorage.setItem(ORI_KEY, f.ori.value); }catch(e){} }
 
   function load(){
     var r = fromHash();
     if(!r) fillExample();
     render();
-    if(r && r.auto) setTimeout(function(){ window.print(); }, 500);
+    if(r && r.auto) setTimeout(doPrint, 400);
   }
 
   $("form").addEventListener("input", render);
   $("form").addEventListener("change", render);
   $("form").addEventListener("submit", function(ev){ ev.preventDefault(); });
+  f.ori.addEventListener("change", saveOri);
   $("cad-chips").addEventListener("click", function(ev){
     var b = ev.target.closest(".chip"); if(!b) return;
     var d = parseLocal(f.elab.value) || new Date();
@@ -340,10 +448,10 @@
     f.cad.value = toDateInput(d);
     render();
   });
-  $("print-btn").addEventListener("click", function(){ render(); window.print(); });
-  window.addEventListener("resize", scalePreview);
+  $("print-btn").addEventListener("click", doPrint);
   window.addEventListener("hashchange", load);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+  loadOri();
   load();
 })();
 </script>
